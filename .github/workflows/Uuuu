@@ -1,0 +1,57 @@
+name: 🔧 Corrigir URL do Render
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  fix-urls:
+    name: Substituir URL antiga pela nova
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 Baixar o repositório
+        uses: actions/checkout@v4
+
+      - name: 🔍 Substituir URL antiga pela nova
+        run: |
+          OLD="https://life-os-app-wg4o.onrender.com"
+          NEW="https://lifeos-v9-api1.onrender.com"
+
+          echo "🔄 Procurando arquivos com a URL antiga..."
+
+          grep -rl "$OLD" . \
+            --include="*.html" \
+            --include="*.js" \
+            --include="*.ts" \
+            --include="*.json" \
+            --include="*.py" \
+            --exclude-dir=".git" \
+            --exclude-dir="node_modules" \
+            --exclude-dir="__pycache__" \
+          | while read file; do
+              sed -i "s|$OLD|$NEW|g" "$file"
+              echo "✅ Corrigido: $file"
+            done
+
+          echo ""
+          echo "✅ Substituição concluída!"
+
+      - name: 📤 Salvar as correções no repositório
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet; then
+            echo "ℹ️ Nenhuma mudança necessária — URL já estava correta."
+          else
+            git add .
+            git commit -m "fix: atualiza URL do Render automaticamente"
+            git push
+            echo "🚀 Correções salvas e enviadas!"
+          fi
