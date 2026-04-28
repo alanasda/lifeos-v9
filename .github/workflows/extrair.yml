@@ -1,0 +1,33 @@
+name: Extrair ZIP e preparar deploy
+
+on:
+  push:
+    paths:
+      - 'projeto.zip'
+
+jobs:
+  extrair:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Extrair o zip
+        run: |
+          unzip -o projeto.zip
+          cp -r LifeOSV7_fixed/backend ./backend
+          cp -r LifeOSV7_fixed/frontend ./frontend
+          cp -r LifeOSV7_fixed/db_migrations ./db_migrations
+          rm -rf LifeOSV7_fixed
+          rm projeto.zip
+
+      - name: Commitar arquivos extraídos
+        run: |
+          git config user.name "Deploy Bot"
+          git config user.email "bot@lifeos.app"
+          git add .
+          git commit -m "Projeto extraído e pronto para deploy"
+          git push
